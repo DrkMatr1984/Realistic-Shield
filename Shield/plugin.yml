@@ -1,0 +1,6 @@
+name: Shield
+main: com.hotmail.ooosssososos.Shield
+version: 1.9
+permissions:
+  Shield.block:
+    description: Gives access to blocking

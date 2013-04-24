@@ -1,0 +1,5 @@
+#Default Config
+blockDuration: 1
+hungerCost: 1
+nameOfItem: Shield
+Default Durability: 25

@@ -46,27 +46,32 @@ public class Shield extends JavaPlugin implements Listener{
 	public FireworkEffectPlayer fwp = new FireworkEffectPlayer();
 	protected UpdateCheck check;
 	public void onEnable(){
-		
+		FileConfiguration conf = this.getConfig();
+		conf.addDefault("enableUpdateDetect", true);
+		conf.addDefault("blockDuration", 1);
+		conf.addDefault("hungerCost", 1);
+		conf.addDefault("Lowest Durability", 25);
+		conf.addDefault("nameOfItem", "Shield");
+		conf.addDefault("Color", 0x00FF3C);
+		conf.addDefault("sound", true);
+		conf.addDefault("Fireworks", true);
+		conf.addDefault("enableUpdateDetect", true);
+		conf.addDefault("damageAfterHunger", true);
+		conf.addDefault("enableMultipleTeirs", false);
+		conf.options().copyDefaults(true);
+		this.saveConfig();
 		log = this.getLogger();
+		if(conf.getBoolean("enableUpdateDetect")){
 		this.check = new UpdateCheck(this,"http://dev.bukkit.org/server-mods/shield-plus/files.rss");
 		if(check.updateNeeded()){
 			this.log.info("A new version is available: " + this.check.getVersion());
 			this.log.info("get it here : " + this.check.getLink());
 		}
-		FileConfiguration conf = this.getConfig();
-		conf.addDefault("blockDuration", 1);
-		conf.addDefault("hungerCost", 1);
-		conf.addDefault("Default Durability", 25);
-		conf.addDefault("nameOfItem", "Shield");
-		conf.addDefault("Color", 0x00FF3C);
-		conf.addDefault("sound", true);
-		conf.addDefault("Fireworks", true);
-		conf.addDefault("damageAfterHunger", true);
-		conf.options().copyDefaults(true);
-		this.saveConfig();
+		}
+		
 		duration = conf.getInt("blockDuration");
 		hungerCost = conf.getInt("hungerCost");
-		durability = conf.getInt("Default Durability");
+		durability = conf.getInt("Lowest Durability");
 		name = conf.getString("nameOfItem");
 		Color = conf.getInt("Color");
 		
@@ -76,15 +81,28 @@ public class Shield extends JavaPlugin implements Listener{
 		ItemMeta a = rec.getItemMeta();
 		a.setDisplayName(name +" " + durability +" /" + durability);
 		rec.setItemMeta(a);
-		
 		ShapedRecipe grinderRecipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.REDSTONE);
 		getServer().addRecipe(grinderRecipe);
+		if(conf.getBoolean("enableMultipleTeirs")){
+			a.setDisplayName(name +" " + durability + 20  +" /" + durability);
+			rec.setItemMeta(a);
+			ShapedRecipe grinder3Recipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.DIAMOND);
+			a.setDisplayName(name +" " + durability + 10 +" /" + durability);
+			rec.setItemMeta(a);
+			ShapedRecipe grinder2Recipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.IRON_INGOT);
+			getServer().addRecipe(grinder2Recipe);
+			getServer().addRecipe(grinder3Recipe);
+		}else{
+			
+		}
+		
 		this.getServer().getPluginManager().registerEvents(this, this);	
 	}
 	@EventHandler
 	public void onClick(final PlayerInteractEvent e){
-		boolean d = false;
+		
 		if(blocking.contains(e.getPlayer().getName()))return;
+		boolean d = false;
 		if(e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
 			if( e.getPlayer().hasPermission(new Permission("Shield.block"))){
 			if(e.getItem()!= null){
@@ -115,7 +133,7 @@ public class Shield extends JavaPlugin implements Listener{
 	}
 	@EventHandler(ignoreCancelled = true)
 	public void onDamage(EntityDamageByEntityEvent e){
-		if(e.getEntity() instanceof Player){
+		if(!(e.getEntity() instanceof Player))return;
 			
 			Player p = (Player)e.getEntity();
 			
@@ -161,9 +179,10 @@ public class Shield extends JavaPlugin implements Listener{
 				if(p.getLocation().getDirection().dot(e.getDamager().getLocation().getDirection()) < 0){
 					e.setCancelled(true);
 					playEffects(p);
+					p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 5));
 			}
 			}
-		}
+		
 	}
 	public void playEffects(Player p){
 		if(this.getConfig().getBoolean("sound")){

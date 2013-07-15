@@ -4,3 +4,11 @@ version: 1.9
 permissions:
   Shield.block:
     description: Gives access to blocking
+  Shield.craft:
+        description: Gives access to crafting
+commands:
+   Shield:
+      description: This is a demo command.
+      usage: /<command> [player]
+      permission: <plugin name>.Shield
+      permission-message: You don't have <permission>

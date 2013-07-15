@@ -4,21 +4,19 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 
-
-
-
-import net.minecraft.server.v1_5_R2.DataWatcher;
-import net.minecraft.server.v1_5_R2.EntityLiving;
-import net.minecraft.server.v1_5_R2.PotionBrewer;
-
+import net.minecraft.server.v1_5_R3.DataWatcher;
+import net.minecraft.server.v1_5_R3.EntityLiving;
+import net.minecraft.server.v1_5_R3.PotionBrewer;
 import org.bukkit.Color;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_5_R2.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_5_R3.entity.CraftLivingEntity;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,6 +24,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
@@ -35,6 +35,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Shield extends JavaPlugin implements Listener{
+    ShapedRecipe grinderRecipe;
+    ItemStack rec;
 	Plugin plugin;
 	protected Logger log;
 	private static ArrayList<String> blocking = new ArrayList<String>();
@@ -77,11 +79,11 @@ public class Shield extends JavaPlugin implements Listener{
 		
 		
 		plugin = this;
-		ItemStack rec = new ItemStack(34, 1);
+		rec = new ItemStack(34, 1);
 		ItemMeta a = rec.getItemMeta();
 		a.setDisplayName(name +" " + durability +" /" + durability);
 		rec.setItemMeta(a);
-		ShapedRecipe grinderRecipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.REDSTONE);
+		grinderRecipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.REDSTONE);
 		getServer().addRecipe(grinderRecipe);
 		if(conf.getBoolean("enableMultipleTeirs")){
 			a.setDisplayName(name +" " + durability + 20  +" /" + durability);
@@ -98,6 +100,16 @@ public class Shield extends JavaPlugin implements Listener{
 		
 		this.getServer().getPluginManager().registerEvents(this, this);	
 	}
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+        Player p = (Player) sender;
+        if(args[0] == null){
+            p.getInventory().addItem(rec);
+        }else{
+            Bukkit.getServer().getPlayer(args[0]).getInventory().addItem(rec);
+        }
+        return true;
+    }
 	@EventHandler
 	public void onClick(final PlayerInteractEvent e){
 		
@@ -184,6 +196,16 @@ public class Shield extends JavaPlugin implements Listener{
 			}
 		
 	}
+    @EventHandler
+    public void craftEvent(CraftItemEvent event){
+        if(event.getRecipe().getResult().equals(rec)){
+            if(!event.getView().getPlayer().hasPermission("Shield.craft")){
+                event.setCancelled(true);
+            }else{
+                ((Player)event.getView().getPlayer()).sendMessage("You do not have permission to craft a shield");
+            }
+        }
+    }
 	public void playEffects(Player p){
 		if(this.getConfig().getBoolean("sound")){
 		p.getWorld().playEffect(p.getLocation(), Effect.ZOMBIE_DESTROY_DOOR,0);

@@ -21,7 +21,8 @@
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
             <!-- Bukkit API Version, change if necessary -->
-            <version>1.5.2-R1.0</version>
+            <version>1.6.2-R0.1-SNAPSHOT</version>
         </dependency>
+
     </dependencies>
 </project>

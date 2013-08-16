@@ -24,7 +24,7 @@ public class FireworkEffectPlayer {
        
         /*
          * Example use:
-         *
+         *d
          * public class FireWorkPlugin implements Listener {
          *
          * FireworkEffectPlayer fplayer = new FireworkEffectPlayer();

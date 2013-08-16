@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 
-import net.minecraft.server.v1_5_R3.DataWatcher;
-import net.minecraft.server.v1_5_R3.EntityLiving;
-import net.minecraft.server.v1_5_R3.PotionBrewer;
+import net.minecraft.server.v1_6_R2.DataWatcher;
+import net.minecraft.server.v1_6_R2.EntityLiving;
+import net.minecraft.server.v1_6_R2.PotionBrewer;
 import org.bukkit.Color;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -16,9 +16,11 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_5_R3.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_6_R2.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_6_R2.entity.CraftPlayer;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -124,7 +126,8 @@ public class Shield extends JavaPlugin implements Listener{
 			d = true;
 				}else{
 					if(getConfig().getBoolean("damageAfterHunger")){
-					e.getPlayer().setHealth(e.getPlayer().getHealth() -hungerCost);
+					e.getPlayer().setHealth((double)(((CraftPlayer)e.getPlayer()).getHandle().getHealth() -hungerCost));
+
 					d = true;
 					}
 					

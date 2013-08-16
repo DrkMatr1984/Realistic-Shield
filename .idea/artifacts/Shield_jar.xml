@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Shield:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Shield_jar</output-path>
+    <root id="archive" name="Shield.jar">
+      <element id="module-output" name="Shield" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/bukkit/craftbukkit/1.5.2-R1.0/craftbukkit-1.5.2-R1.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

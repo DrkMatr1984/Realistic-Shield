@@ -29,7 +29,7 @@ public class UpdateCheck {
 	public boolean updateNeeded(){
 		
 		try {
-			
+			//d
 			InputStream in = this.fileFeed.openConnection().getInputStream();
 			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
 			

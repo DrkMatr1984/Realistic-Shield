@@ -7,12 +7,8 @@ import java.util.logging.Logger;
 import net.minecraft.server.v1_6_R2.DataWatcher;
 import net.minecraft.server.v1_6_R2.EntityLiving;
 import net.minecraft.server.v1_6_R2.PotionBrewer;
-import org.bukkit.Color;
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
-import org.bukkit.FireworkEffect;
+import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,6 +22,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -44,24 +41,26 @@ public class Shield extends JavaPlugin implements Listener{
 	private static ArrayList<String> blocking = new ArrayList<String>();
 	public int duration = 10;
 	public int hungerCost = 1;
-	public int durability = 25;
 	public String name = "Shield";
 	int Color = 0x00FF3C;
 	public FireworkEffectPlayer fwp = new FireworkEffectPlayer();
 	protected UpdateCheck check;
+    public void onDisable(){
+        this.saveConfig();
+    }
 	public void onEnable(){
 		FileConfiguration conf = this.getConfig();
 		conf.addDefault("enableUpdateDetect", true);
 		conf.addDefault("blockDuration", 1);
 		conf.addDefault("hungerCost", 1);
-		conf.addDefault("Lowest Durability", 25);
 		conf.addDefault("nameOfItem", "Shield");
-		conf.addDefault("Color", 0x00FF3C);
+		conf.addDefault("Color", "0x00FF3C");
 		conf.addDefault("sound", true);
 		conf.addDefault("Fireworks", true);
 		conf.addDefault("enableUpdateDetect", true);
 		conf.addDefault("damageAfterHunger", true);
-		conf.addDefault("enableMultipleTeirs", false);
+		conf.addDefault("Tiers", 1);
+
 		conf.options().copyDefaults(true);
 		this.saveConfig();
 		log = this.getLogger();
@@ -75,30 +74,58 @@ public class Shield extends JavaPlugin implements Listener{
 		
 		duration = conf.getInt("blockDuration");
 		hungerCost = conf.getInt("hungerCost");
-		durability = conf.getInt("Lowest Durability");
 		name = conf.getString("nameOfItem");
-		Color = conf.getInt("Color");
+		//Color = conf.getInt("Color");
 		
 		
 		plugin = this;
-		rec = new ItemStack(34, 1);
-		ItemMeta a = rec.getItemMeta();
-		a.setDisplayName(name +" " + durability +" /" + durability);
-		rec.setItemMeta(a);
-		grinderRecipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.REDSTONE);
-		getServer().addRecipe(grinderRecipe);
-		if(conf.getBoolean("enableMultipleTeirs")){
-			a.setDisplayName(name +" " + durability + 20  +" /" + durability);
-			rec.setItemMeta(a);
-			ShapedRecipe grinder3Recipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.DIAMOND);
-			a.setDisplayName(name +" " + durability + 10 +" /" + durability);
-			rec.setItemMeta(a);
-			ShapedRecipe grinder2Recipe = new ShapedRecipe(rec).shape("bib", "iri", "bib").setIngredient('b', Material.CLAY_BRICK).setIngredient('i', Material.IRON_INGOT).setIngredient('r', Material.IRON_INGOT);
-			getServer().addRecipe(grinder2Recipe);
-			getServer().addRecipe(grinder3Recipe);
-		}else{
-			
-		}
+        for(int i = 1; i <= conf.getInt("Tiers");i++){
+            int t = conf.getInt("data.Tier"+i+".ID");
+            if(t != 0){
+                rec = new ItemStack(t,1);
+                ItemMeta a = rec.getItemMeta();
+                ArrayList<String> temp = new ArrayList<String>();
+                for(String b :conf.getString("data.Tier"+i+".lore").split("/n")){
+                    temp.add(ChatColor.BOLD + b);
+                }
+                temp.add("Durability: " + conf.getInt("data.Tier" + i+".Durability") + "/"+ conf.getInt("data.Tier" + i+".Durability") + " ◄");
+                a.setDisplayName(ChatColor.BOLD + conf.getString("data.Tier"+i+".name"));
+                a.setLore(temp);
+
+
+                rec.setItemMeta(a);
+                grinderRecipe = new ShapedRecipe(rec).shape("abc", "def", "ghi").setIngredient('a', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.1")))
+                        .setIngredient('b',Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.2")))
+                        .setIngredient('c', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.3")))
+                        .setIngredient('d', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.4")))
+                        .setIngredient('e', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.5")))
+                        .setIngredient('f', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.6")))
+                        .setIngredient('g', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.7")))
+                        .setIngredient('h', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.8")))
+                        .setIngredient('i', Material.getMaterial(conf.getInt("data.Tier" + i + ".recipe.9")));
+
+                getServer().addRecipe(grinderRecipe);
+            }else{
+                this.getLogger().info("generated defualts");
+                conf.set("data.Tier"+i+".ID",34);
+                conf.set("data.Tier"+i+".name","Shield");
+                conf.set("data.Tier"+i+".Durability",10);
+                conf.set("data.Tier"+i+".lore", "");
+                conf.set("data.Tier"+i+".recipe.1",34);
+                conf.set("data.Tier"+i+".recipe.2",34);
+                conf.set("data.Tier"+i+".recipe.3",34);
+                conf.set("data.Tier"+i+".recipe.4",34);
+                conf.set("data.Tier"+i+".recipe.5",34);
+                conf.set("data.Tier"+i+".recipe.6",34);
+                conf.set("data.Tier"+i+".recipe.7",34);
+                conf.set("data.Tier"+i+".recipe.8",34);
+                conf.set("data.Tier"+i+".recipe.9",34);
+
+            }
+
+        }
+
+
 		
 		this.getServer().getPluginManager().registerEvents(this, this);	
 	}
@@ -108,7 +135,11 @@ public class Shield extends JavaPlugin implements Listener{
         if(args[0] == null){
             p.getInventory().addItem(rec);
         }else{
+            try{
             Bukkit.getServer().getPlayer(args[0]).getInventory().addItem(rec);
+            }catch(NullPointerException e){
+                sender.sendMessage(ChatColor.RED + "[RealisticShield] The Target Player doesn't exist or is not online");
+            }
         }
         return true;
     }
@@ -120,9 +151,10 @@ public class Shield extends JavaPlugin implements Listener{
 		if(e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
 			if( e.getPlayer().hasPermission(new Permission("Shield.block"))){
 			if(e.getItem()!= null){
-			if(e.getItem().getTypeId() == 34){
+			if(e.getItem().getItemMeta().hasLore() &&e.getItem().getItemMeta().getLore().get(e.getItem().getItemMeta().getLore().size()-1).endsWith("◄")){
 				if(e.getPlayer().getFoodLevel() >= 1){
 			e.getPlayer().setFoodLevel(e.getPlayer().getFoodLevel()-hungerCost);
+
 			d = true;
 				}else{
 					if(getConfig().getBoolean("damageAfterHunger")){
@@ -132,14 +164,19 @@ public class Shield extends JavaPlugin implements Listener{
 					}
 					
 				}
+
 				if(d == true){
 					blocking.add(e.getPlayer().getName());
-				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
 		            public void run() {
 		               blocking.remove(e.getPlayer().getName());
 		            }
 		        }, duration*20);
-			addPotionGraphicalEffect(e.getPlayer(),Color,duration*20);
+            try{
+			addPotionGraphicalEffect(e.getPlayer(),0x00FF3C,duration*20);
+            }catch(Exception be){
+            }
+
 			}
 			}
 			}
@@ -155,12 +192,12 @@ public class Shield extends JavaPlugin implements Listener{
 			if(p.getItemInHand().getTypeId() == 34){
 				if(e.getDamager() instanceof Arrow){
 					if(blocking.contains(p.getName())){
-					int dura = Integer.parseInt(p.getItemInHand().getItemMeta().getDisplayName().split(" ")[1]);
-					String durab = p.getItemInHand().getItemMeta().getDisplayName().split(" ")[2];
+					int dura = Integer.parseInt(p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size()-1).split(" ")[1]);
+					String durab = p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size() - 1).split(" ")[2];
 					ItemStack rec = p.getItemInHand();
 					ItemMeta a = rec.getItemMeta();
 					dura --;
-					a.setDisplayName(name + " " + dura + " "+ durab);
+                    a.getLore().set(a.getLore().size()-1,"Durability: " + dura + "/" + durab + " ◄");
 					rec.setItemMeta(a);
 					if(dura <= 0){
 						p.setItemInHand(null);
@@ -172,12 +209,12 @@ public class Shield extends JavaPlugin implements Listener{
 					}
 				}else if(p.getLocation().getDirection().dot(e.getDamager().getLocation().getDirection()) < 0){
 					if(blocking.contains(p.getName())){
-					int dura = Integer.parseInt(p.getItemInHand().getItemMeta().getDisplayName().split(" ")[1]);
-					String durab = p.getItemInHand().getItemMeta().getDisplayName().split(" ")[2];
+                        int dura = Integer.parseInt(p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size()-1).split(" ")[1]);
+                        String durab = p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size() - 1).split(" ")[2];
 					ItemStack rec = p.getItemInHand();
 					ItemMeta a = rec.getItemMeta();
 					dura --;
-					a.setDisplayName(name + " " + dura + " "+ durab);
+                        a.getLore().set(a.getLore().size()-1,"Durability: " + dura + "/" + durab + " ◄");
 					rec.setItemMeta(a);
 					if(dura <= 0){
 						p.setItemInHand(null);
@@ -203,9 +240,9 @@ public class Shield extends JavaPlugin implements Listener{
     public void craftEvent(CraftItemEvent event){
         if(event.getRecipe().getResult().equals(rec)){
             if(!event.getView().getPlayer().hasPermission("Shield.craft")){
+                ((Player)event.getView().getPlayer()).sendMessage("You do not have permission to craft a shield");
                 event.setCancelled(true);
             }else{
-                ((Player)event.getView().getPlayer()).sendMessage("You do not have permission to craft a shield");
             }
         }
     }
@@ -225,21 +262,21 @@ public class Shield extends JavaPlugin implements Listener{
 		}
 		}
 	}
-	   public void addPotionGraphicalEffect(LivingEntity entity, int color, int duration) {
-	        final EntityLiving el = ((CraftLivingEntity)entity).getHandle();
-	        final DataWatcher dw = el.getDataWatcher();
-	        dw.watch(8, Integer.valueOf(color));
-	 
-	        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-	            public void run() {
-	                int c = 0;
-	                if (!el.effects.isEmpty()) {
-	                    c = PotionBrewer.a(el.effects.values());
-	                }
-	                dw.watch(8, Integer.valueOf(c));
-	                
-	            }
-	        }, duration);
-	    }
+    public void addPotionGraphicalEffect(LivingEntity entity, int color, int duration) {
+        final EntityLiving el = ((CraftLivingEntity)entity).getHandle();
+        final DataWatcher dw = el.getDataWatcher();
+        dw.watch(7, Integer.valueOf(color));
+
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            public void run() {
+                int c = 0;
+                if (!el.effects.isEmpty()) {
+
+                    c = PotionBrewer.a(el.effects.values());
+                }
+                dw.watch(7, Integer.valueOf(c));
+            }
+        }, duration);
+    }
 	 
 }

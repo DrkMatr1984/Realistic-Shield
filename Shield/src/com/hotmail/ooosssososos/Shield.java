@@ -1,6 +1,7 @@
 package com.hotmail.ooosssososos;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -88,7 +89,7 @@ public class Shield extends JavaPlugin implements Listener{
                 for(String b :conf.getString("data.Tier"+i+".lore").split("/n")){
                     temp.add(ChatColor.BOLD + b);
                 }
-                temp.add("Durability: " + conf.getInt("data.Tier" + i+".Durability") + "/"+ conf.getInt("data.Tier" + i+".Durability") + " ◄");
+                temp.add("Durability: " + conf.getInt("data.Tier" + i+".Durability") + " / "+ conf.getInt("data.Tier" + i+".Durability") + " ◄");
                 a.setDisplayName(ChatColor.BOLD + conf.getString("data.Tier"+i+".name"));
                 a.setLore(temp);
 
@@ -111,15 +112,15 @@ public class Shield extends JavaPlugin implements Listener{
                 conf.set("data.Tier"+i+".name","Shield");
                 conf.set("data.Tier"+i+".Durability",10);
                 conf.set("data.Tier"+i+".lore", "");
-                conf.set("data.Tier"+i+".recipe.1",34);
-                conf.set("data.Tier"+i+".recipe.2",34);
-                conf.set("data.Tier"+i+".recipe.3",34);
-                conf.set("data.Tier"+i+".recipe.4",34);
-                conf.set("data.Tier"+i+".recipe.5",34);
-                conf.set("data.Tier"+i+".recipe.6",34);
-                conf.set("data.Tier"+i+".recipe.7",34);
-                conf.set("data.Tier"+i+".recipe.8",34);
-                conf.set("data.Tier"+i+".recipe.9",34);
+                conf.set("data.Tier"+i+".recipe.1",336);
+                conf.set("data.Tier"+i+".recipe.2",265);
+                conf.set("data.Tier"+i+".recipe.3",336);
+                conf.set("data.Tier"+i+".recipe.4",265);
+                conf.set("data.Tier"+i+".recipe.5",331);
+                conf.set("data.Tier"+i+".recipe.6",265);
+                conf.set("data.Tier"+i+".recipe.7",365);
+                conf.set("data.Tier"+i+".recipe.8",265);
+                conf.set("data.Tier"+i+".recipe.9",336);
 
             }
 
@@ -149,7 +150,7 @@ public class Shield extends JavaPlugin implements Listener{
 		if(blocking.contains(e.getPlayer().getName()))return;
 		boolean d = false;
 		if(e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-			if( e.getPlayer().hasPermission(new Permission("Shield.block"))){
+			if( e.getPlayer().hasPermission("Shield.block")){
 			if(e.getItem()!= null){
 			if(e.getItem().getItemMeta().hasLore() &&e.getItem().getItemMeta().getLore().get(e.getItem().getItemMeta().getLore().size()-1).endsWith("◄")){
 				if(e.getPlayer().getFoodLevel() >= 1){
@@ -197,7 +198,10 @@ public class Shield extends JavaPlugin implements Listener{
 					ItemStack rec = p.getItemInHand();
 					ItemMeta a = rec.getItemMeta();
 					dura --;
-                    a.getLore().set(a.getLore().size()-1,"Durability: " + dura + "/" + durab + " ◄");
+                        List<String> dattemp = a.getLore().subList(0,a.getLore().size()-1);
+                        dattemp.add("Durability: " + dura + " / " + durab + " ◄");
+
+                        a.setLore(dattemp);
 					rec.setItemMeta(a);
 					if(dura <= 0){
 						p.setItemInHand(null);
@@ -210,11 +214,16 @@ public class Shield extends JavaPlugin implements Listener{
 				}else if(p.getLocation().getDirection().dot(e.getDamager().getLocation().getDirection()) < 0){
 					if(blocking.contains(p.getName())){
                         int dura = Integer.parseInt(p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size()-1).split(" ")[1]);
-                        String durab = p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size() - 1).split(" ")[2];
+                        String durab = p.getItemInHand().getItemMeta().getLore().get(p.getItemInHand().getItemMeta().getLore().size() - 1).split(" ")[3];
 					ItemStack rec = p.getItemInHand();
 					ItemMeta a = rec.getItemMeta();
 					dura --;
-                        a.getLore().set(a.getLore().size()-1,"Durability: " + dura + "/" + durab + " ◄");
+                        List<String> dattemp = a.getLore().subList(0,a.getLore().size()-1);
+                        dattemp.add("Durability: " + dura + " / " + durab + " ◄");
+
+                        a.setLore(dattemp);
+
+
 					rec.setItemMeta(a);
 					if(dura <= 0){
 						p.setItemInHand(null);
